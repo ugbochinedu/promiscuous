@@ -1,4 +1,4 @@
-package africa.semicolon.promiscuous.dtos;
+package africa.semicolon.promiscuous.dtos.request;
 
 
 import lombok.Getter;

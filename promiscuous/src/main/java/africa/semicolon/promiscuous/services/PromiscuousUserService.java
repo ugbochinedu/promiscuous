@@ -1,12 +1,11 @@
 package africa.semicolon.promiscuous.services;
 
-import africa.semicolon.promiscuous.dtos.RegisterUserRequest;
-import africa.semicolon.promiscuous.dtos.RegisterUserResponse;
+import africa.semicolon.promiscuous.dtos.request.RegisterUserRequest;
+import africa.semicolon.promiscuous.dtos.response.RegisterUserResponse;
 import africa.semicolon.promiscuous.models.User;
 import africa.semicolon.promiscuous.repositories.UserRepository;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service

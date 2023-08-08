@@ -1,8 +1,8 @@
 package africa.semicolon.promiscuous.services;
 
 
-import africa.semicolon.promiscuous.dtos.RegisterUserRequest;
-import africa.semicolon.promiscuous.dtos.RegisterUserResponse;
+import africa.semicolon.promiscuous.dtos.request.RegisterUserRequest;
+import africa.semicolon.promiscuous.dtos.response.RegisterUserResponse;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
