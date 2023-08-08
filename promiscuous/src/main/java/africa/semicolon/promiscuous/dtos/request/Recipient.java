@@ -1,15 +1,13 @@
 package africa.semicolon.promiscuous.dtos.request;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @Setter
 @Getter
-@AllArgsConstructor
+@RequiredArgsConstructor
 @NoArgsConstructor
 public class Recipient {
     private String name;
+    @NonNull
     private String email;
 }
