@@ -2,7 +2,6 @@ package africa.semicolon.promiscuous.services;
 
 import africa.semicolon.promiscuous.dtos.request.EmailNotificationRequest;
 import africa.semicolon.promiscuous.dtos.request.Recipient;
-import africa.semicolon.promiscuous.dtos.request.Sender;
 import africa.semicolon.promiscuous.dtos.response.EmailNotificationResponse;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
