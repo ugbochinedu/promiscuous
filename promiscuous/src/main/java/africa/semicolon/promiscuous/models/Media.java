@@ -17,7 +17,7 @@ public class Media {
     @ElementCollection
     @Enumerated(value = EnumType.STRING)
     private List<Reaction> reactions;
-    @Column(unique = true, columnDefinition = "MEDIUMTEXT", length = 1000)
+    @Column(unique = false, columnDefinition = "MEDIUMTEXT", length = 1000)
     private String url;
 
     @ManyToOne

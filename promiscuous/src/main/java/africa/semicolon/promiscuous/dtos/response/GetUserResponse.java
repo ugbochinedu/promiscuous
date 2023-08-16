@@ -5,13 +5,14 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
-@Getter
-@Setter
 @AllArgsConstructor
 @Builder
-public class ActivateAccountResponse {
-    private String message;
-
-    private GetUserResponse user;
+@Setter
+@Getter
+public class GetUserResponse {
+    private Long id;
+    private String email;
+    private String fullName;
+    private String address;
+    private String phoneNumber;
 }
-

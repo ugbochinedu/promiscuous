@@ -11,6 +11,8 @@ public class AppConfig {
 
     @Value("${app.dev.token}")
     private String testToken;
+    @Value("${app.base.url}")
+    private String baseUrl;
 
     public String getMailApiKey() {
         return mailApiKey;
@@ -18,5 +20,8 @@ public class AppConfig {
 
     public String getTestToken() {
         return this.testToken;
+    }
+    public String getBaseUrl(){
+        return baseUrl;
     }
 }
