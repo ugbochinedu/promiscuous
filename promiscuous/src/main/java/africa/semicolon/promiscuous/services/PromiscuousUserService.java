@@ -11,21 +11,23 @@ import africa.semicolon.promiscuous.models.Address;
 import africa.semicolon.promiscuous.models.Interest;
 import africa.semicolon.promiscuous.models.User;
 import africa.semicolon.promiscuous.repositories.UserRepository;
+import africa.semicolon.promiscuous.services.cloud.CloudService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.TextNode;
 import com.github.fge.jackson.jsonpointer.JsonPointer;
-import com.github.fge.jackson.jsonpointer.JsonPointerException;
 import com.github.fge.jsonpatch.JsonPatch;
 import com.github.fge.jsonpatch.JsonPatchException;
 import com.github.fge.jsonpatch.JsonPatchOperation;
 import com.github.fge.jsonpatch.ReplaceOperation;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.lang.reflect.Field;
 import java.util.*;
@@ -45,6 +47,7 @@ public class PromiscuousUserService implements UserService{
     private final UserRepository userRepository;
     private final MailService mailService;
     private final AppConfig appConfig;
+    private final CloudService cloudService;
 
     @Override
     public RegisterUserResponse register(RegisterUserRequest registerUserRequest) {
@@ -138,6 +141,8 @@ public class PromiscuousUserService implements UserService{
 
     @Override
     public UpdateUserResponse updateProfile(UpdateUserRequest updateUserRequest, Long id) {
+        ModelMapper modelMapper = new ModelMapper();
+        uploadImage(updateUserRequest.getProfileImage());
 
         ObjectMapper objectMapper = new ObjectMapper();
         //1convert user to jsonNode
@@ -145,6 +150,10 @@ public class PromiscuousUserService implements UserService{
         Set<String> userInterests = updateUserRequest.getInterests();
         Set<Interest> interests = parseInterestsFrom(userInterests);
         user.setInterests(interests);
+
+        Address userAddress = user.getAddress();
+        modelMapper.map(updateUserRequest, userAddress);
+        user.setAddress(userAddress);
         JsonPatch updatePatch = buildUpdatePatch(updateUserRequest);
         JsonNode userNode = objectMapper.convertValue(user,JsonNode.class);
         try{
@@ -162,6 +171,11 @@ public class PromiscuousUserService implements UserService{
         }
     }
 
+    private void uploadImage(MultipartFile profileImage) {
+        boolean isFormWithProfileImage = profileImage != null;
+        if (isFormWithProfileImage) cloudService.upload(profileImage);
+    }
+
     private static Set<Interest> parseInterestsFrom(Set<String> interests){
         Set<Interest> userInterests =  interests.stream()
                 .map(interest -> Interest.valueOf(interest.toUpperCase()))
@@ -174,7 +188,7 @@ public class PromiscuousUserService implements UserService{
 
         List<ReplaceOperation> operations=Arrays.stream(fields)
                 .filter(field ->{
-                    List<String> list = List.of("interests", "street", "houseNumber", "country","state","gender");
+                    List<String> list = List.of("interests", "street", "houseNumber", "country","state","gender", "profileImage");
                     field.setAccessible(true);
                     try{
                         return field.get(updateUserRequest) != null && !list.contains(field.getName());

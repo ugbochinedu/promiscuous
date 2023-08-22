@@ -116,12 +116,14 @@ public class UserServiceTest {
     private UpdateUserRequest buildUpdateRequest() {
         Set<String> interests = Set.of("swimming", "sports","cooking");
         UpdateUserRequest updateUserRequest = new UpdateUserRequest();
+        updateUserRequest.setPhoneNumber("0308735434");
         updateUserRequest.setFirstName("Sherriff");
         updateUserRequest.setLastName("chris");
         updateUserRequest.setDateOfBirth(LocalDate.of(2005, Month.NOVEMBER.ordinal(),25));
 //        MultipartFile testImage = getTestImage();
 //        updateUserRequest.setProfileImage(testImage);
         updateUserRequest.setInterests(interests);
+        updateUserRequest.setCountry("Ghana");
         return updateUserRequest;
     }
 

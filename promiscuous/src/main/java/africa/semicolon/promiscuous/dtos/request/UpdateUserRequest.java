@@ -24,3 +24,4 @@ public class UpdateUserRequest {
     private String state;
     private String country;
 }
+

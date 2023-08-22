@@ -2,6 +2,7 @@ package africa.semicolon.promiscuous.controllers;
 
 import africa.semicolon.promiscuous.dtos.request.FindUserRequest;
 import africa.semicolon.promiscuous.dtos.request.RegisterUserRequest;
+import africa.semicolon.promiscuous.dtos.request.UpdateUserRequest;
 import africa.semicolon.promiscuous.dtos.response.GetUserResponse;
 import africa.semicolon.promiscuous.dtos.response.RegisterUserResponse;
 import africa.semicolon.promiscuous.dtos.response.UpdateUserResponse;
@@ -45,4 +46,11 @@ public class UserController {
 //        UpdateUserResponse response = userService.updateUserProfile(jsonPatch, id);
 //        return ResponseEntity.ok(response);
 //    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<UpdateUserResponse> updateUserProfile(@ModelAttribute UpdateUserRequest updateUserRequest,
+                                                                @PathVariable Long id){
+        UpdateUserResponse response = userService.updateProfile(updateUserRequest, id);
+        return ResponseEntity.ok(response);
+    }
 }
