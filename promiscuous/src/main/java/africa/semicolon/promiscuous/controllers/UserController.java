@@ -4,7 +4,9 @@ import africa.semicolon.promiscuous.dtos.request.FindUserRequest;
 import africa.semicolon.promiscuous.dtos.request.RegisterUserRequest;
 import africa.semicolon.promiscuous.dtos.response.GetUserResponse;
 import africa.semicolon.promiscuous.dtos.response.RegisterUserResponse;
+import africa.semicolon.promiscuous.dtos.response.UpdateUserResponse;
 import africa.semicolon.promiscuous.services.UserService;
+import com.github.fge.jsonpatch.JsonPatch;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -37,4 +39,10 @@ public class UserController {
         List<GetUserResponse> response = userService.getAllUsers(page,pageSize);
         return ResponseEntity.status(HttpStatus.FOUND).body(response);
     }
+
+//    @PatchMapping("/{id}")
+//    public ResponseEntity<UpdateUserResponse> updateUserAccount(@RequestBody JsonPatch jsonPatch, @PathVariable Long id){
+//        UpdateUserResponse response = userService.updateUserProfile(jsonPatch, id);
+//        return ResponseEntity.ok(response);
+//    }
 }

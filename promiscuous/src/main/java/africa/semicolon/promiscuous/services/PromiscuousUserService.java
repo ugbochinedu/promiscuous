@@ -1,17 +1,25 @@
 package africa.semicolon.promiscuous.services;
 
 import africa.semicolon.promiscuous.config.AppConfig;
-import africa.semicolon.promiscuous.dtos.request.EmailNotificationRequest;
-import africa.semicolon.promiscuous.dtos.request.LoginRequest;
-import africa.semicolon.promiscuous.dtos.request.Recipient;
-import africa.semicolon.promiscuous.dtos.request.RegisterUserRequest;
+import africa.semicolon.promiscuous.dtos.request.*;
 import africa.semicolon.promiscuous.dtos.response.*;
 import africa.semicolon.promiscuous.exceptions.AccountActivationFailedException;
 import africa.semicolon.promiscuous.exceptions.BadCredentialsException;
+import africa.semicolon.promiscuous.exceptions.PromiscuousBaseException;
 import africa.semicolon.promiscuous.exceptions.UserNotFoundException;
 import africa.semicolon.promiscuous.models.Address;
+import africa.semicolon.promiscuous.models.Interest;
 import africa.semicolon.promiscuous.models.User;
 import africa.semicolon.promiscuous.repositories.UserRepository;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.TextNode;
+import com.github.fge.jackson.jsonpointer.JsonPointer;
+import com.github.fge.jackson.jsonpointer.JsonPointerException;
+import com.github.fge.jsonpatch.JsonPatch;
+import com.github.fge.jsonpatch.JsonPatchException;
+import com.github.fge.jsonpatch.JsonPatchOperation;
+import com.github.fge.jsonpatch.ReplaceOperation;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -19,9 +27,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.lang.reflect.Field;
+import java.util.*;
+import java.util.stream.Collectors;
 
 
 import static africa.semicolon.promiscuous.dtos.response.ResponseMessage.ACCOUNT_ACTIVATION_SUCCESSFUL;
@@ -109,6 +117,94 @@ public class PromiscuousUserService implements UserService{
             return loginResponse;
         }
         throw new BadCredentialsException(INVALID_CREDENTIALS_EXCEPTION.getMessage());
+    }
+
+//    @Override
+//    public UpdateUserResponse updateUserProfile(JsonPatch jsonPatch, Long id){
+//        ObjectMapper mapper = new ObjectMapper();
+//        User user = findUserById(id);
+//        JsonNode node = mapper.convertValue(user, JsonNode.class);
+//        try{
+//            JsonNode updateNode = jsonPatch.apply(node);
+//            User updatedUser = mapper.convertValue(updateNode, User.class);
+//            userRepository.save(updatedUser);
+//            UpdateUserResponse response = new UpdateUserResponse();
+//            response.setMessage("update successful");
+//            return response;
+//        }catch(JsonPatchException exception){
+//            throw new PromiscuousBaseException(":()");
+//        }
+//    }
+
+    @Override
+    public UpdateUserResponse updateProfile(UpdateUserRequest updateUserRequest, Long id) {
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        //1convert user to jsonNode
+        User user = findUserById(id);
+        Set<String> userInterests = updateUserRequest.getInterests();
+        Set<Interest> interests = parseInterestsFrom(userInterests);
+        user.setInterests(interests);
+        JsonPatch updatePatch = buildUpdatePatch(updateUserRequest);
+        JsonNode userNode = objectMapper.convertValue(user,JsonNode.class);
+        try{
+            //2Apply patch to JsinNode from step 1
+            JsonNode updateNode = updatePatch.apply(userNode);
+            //3Convert updatedNode to user
+            user = objectMapper.convertValue(updateNode, User.class);
+            //4save updatedUser from step 3 in the db
+            userRepository.save(user);
+            UpdateUserResponse updateUserResponse = new UpdateUserResponse();
+            updateUserResponse.setMessage("Update Successful");
+            return updateUserResponse;
+        }catch (JsonPatchException exception){
+            throw new PromiscuousBaseException(exception.getMessage());
+        }
+    }
+
+    private static Set<Interest> parseInterestsFrom(Set<String> interests){
+        Set<Interest> userInterests =  interests.stream()
+                .map(interest -> Interest.valueOf(interest.toUpperCase()))
+                .collect(Collectors.toSet());
+        return userInterests;
+    }
+
+    private JsonPatch buildUpdatePatch(UpdateUserRequest updateUserRequest) {
+        Field[] fields = updateUserRequest.getClass().getDeclaredFields();
+
+        List<ReplaceOperation> operations=Arrays.stream(fields)
+                .filter(field ->{
+                    List<String> list = List.of("interests", "street", "houseNumber", "country","state","gender");
+                    field.setAccessible(true);
+                    try{
+                        return field.get(updateUserRequest) != null && !list.contains(field.getName());
+                    }catch (IllegalAccessException e){
+                        throw new RuntimeException(e);
+                    }
+                })
+                .map(field->{
+                    field.setAccessible(true);
+                    try {
+                        String path = "/"+field.getName();
+                        JsonPointer pointer = new JsonPointer(path);
+                        String value = field.get(updateUserRequest).toString();
+                        TextNode node = new TextNode(value);
+                        ReplaceOperation operation = new ReplaceOperation(pointer, node);
+                        return operation;
+                    } catch (Exception exception) {
+                        throw new RuntimeException(exception);
+                    }
+                }).toList();
+        log.info("operations:: {}", operations);  // to sout
+        List<JsonPatchOperation> patchOperations = new ArrayList<>(operations);
+        return new JsonPatch(patchOperations);
+    }
+
+
+    private User findUserById(Long id){
+        Optional<User> foundUser = userRepository.findById(id);
+        User user = foundUser.orElseThrow(()-> new UserNotFoundException(USER_NOT_FOUND_EXCEPTION.getMessage()));
+        return user;
     }
 
     private Pageable buildPageRequest(int page, int pageSize) {
