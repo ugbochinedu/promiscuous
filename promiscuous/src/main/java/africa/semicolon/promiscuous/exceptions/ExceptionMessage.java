@@ -11,6 +11,7 @@ public enum ExceptionMessage {
     USER_REGISTRATION_FAILED_EXCEPTION("User registration failed");
 
     ExceptionMessage(String message){
+
         this.message=message;
     }
 

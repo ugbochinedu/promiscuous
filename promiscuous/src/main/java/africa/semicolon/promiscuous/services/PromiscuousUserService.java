@@ -61,6 +61,7 @@ public class PromiscuousUserService implements UserService{
         EmailNotificationRequest request = buildEmailRequest(savedUser);
         mailService.send(request);
         RegisterUserResponse registerUserResponse = new RegisterUserResponse();
+        registerUserResponse.setId(savedUser.getId());
         registerUserResponse.setMessage(USER_REGISTRATION_SUCCESSFUL.name());
         return registerUserResponse;
     }
